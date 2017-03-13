@@ -105,11 +105,6 @@ contract KeybaseRegistry is usingOraclize {
     }
   }
 
-  function test(uint i) constant returns (string, bytes, uint256) {
-    string memory r = i.uintToString();
-    return (r, bytes(r), bytes(r).length);
-  }
-
   function hashingPayload(string username, address ethAddress) returns (string payload) {
     string memory proof = proofString(username, ethAddress);
     if (isLegacySignature) {
