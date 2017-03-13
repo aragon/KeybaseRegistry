@@ -51,7 +51,7 @@ contract KeybaseRegistry is usingOraclize {
   function processSuccessfulRequest(RegisterRequest request) internal returns (string oldUsername, address oldAddress) {
     oldUsername = usernames[addresses[request.username]];
     oldAddress = addresses[request.username];
-    
+
     usernames[oldAddress] = '';
     addresses[oldUsername] = 0x0;
     usernames[request.requester] = request.username;
@@ -97,7 +97,17 @@ contract KeybaseRegistry is usingOraclize {
   }
 
   function signedPayload(string username, address ethAddress) returns (bytes32) {
-    return keccak256(hashingPayload(username, ethAddress));
+    if (isLegacySignature) {
+      return keccak256(hashingPayload(username, ethAddress));
+    } else {
+      bytes memory p = bytes(proofString(username, ethAddress));
+      return keccak256(0x19, "Ethereum Signed Message:\n", uint(p.length).uintToString(), p);
+    }
+  }
+
+  function test(uint i) constant returns (string, bytes, uint256) {
+    string memory r = i.uintToString();
+    return (r, bytes(r), bytes(r).length);
   }
 
   function hashingPayload(string username, address ethAddress) returns (string payload) {
@@ -105,8 +115,8 @@ contract KeybaseRegistry is usingOraclize {
     if (isLegacySignature) {
       payload = proof;
     } else {
-      uint hashBytes = uint(keccak256(proofString(username, ethAddress)));
-      payload = strConcat("\x19Ethereum Signed Message:\n32", strConcat('0x', hashBytes.toASCIIString(32)));
+      bytes memory proofBytes = bytes(proofString(username, ethAddress));
+      uint l = proofBytes.length;
     }
   }
 
